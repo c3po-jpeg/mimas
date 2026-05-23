@@ -78,7 +78,7 @@ pub fn find_queue_families(
     var indices = QueueFamilyIndices{};
 
     var count: u32 = 0;
-    vk.vkGetAccelerationStructureBuildSizesKHR(device, &count, null);
+    vk.vkGetPhysicalDeviceQueueFamilyProperties(device, &count, null);
 
     const families = try allocator.alloc(vk.VkQueueFamilyProperties, count);
     defer allocator.free(families);
