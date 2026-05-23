@@ -37,16 +37,26 @@ pub fn build(b: *std.Build) void {
 
     // RUN STEP  — `zig build run`
     const run_step = b.step("run", "Run the application");
-
     const run_cmd = b.addRunArtifact(exe);
-
     run_cmd.step.dependOn(b.getInstallStep());
-
     if (b.args) |args| {
         run_cmd.addArgs(args);
     }
-
     run_step.dependOn(&run_cmd.step);
+
+    const clean_step = b.step("clean", "Remove zig-out and .zig-cache");
+    const clean_cmd = switch (b.graph.host.result.os.tag) {
+        .windows => b.addSystemCommand(&.{
+            "cmd",                                                                                            "/c",
+            // 2>nul suppresses the access denied error
+            // || exit 0 prevents a non-zero exit code from failing the step
+            "rd /s /q zig-out 2>nul & rd /s /q .zig-cache\\o 2>nul & rd /s /q .zig-cache\\h 2>nul || exit 0",
+        }),
+        else => b.addSystemCommand(&.{
+            "rm", "-rf", "zig-out", ".zig-cache",
+        }),
+    };
+    clean_step.dependOn(&clean_cmd.step);
 
     // TEST STEP  — `zig build test`
     const exe_test = b.addTest(.{
