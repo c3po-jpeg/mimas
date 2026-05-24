@@ -37,7 +37,8 @@ pub fn pick(
     for (devices) |device| {
         const indices = find_queue_families(allocator, device, surface) catch continue;
         if (!indices.is_complete()) continue;
-        if (!supports_extensions(device) catch continue) continue;
+        const supported = supports_extensions(allocator, device) catch continue;
+        if (!supported) continue;
 
         const score = score_device(device);
 
@@ -52,7 +53,7 @@ pub fn pick(
 
     var props: vk.VkPhysicalDeviceProperties = undefined;
     vk.vkGetPhysicalDeviceProperties(best_device, &props);
-    std.debug.print("GPU selected: {s}\n", .{@as([*:0]const u8, &props.deviceName)});
+    std.debug.print("GPU selected: {s}\n", .{std.mem.sliceTo(&props.deviceName, 0)});
 
     return .{ .device = best_device, .indices = best_indices };
 }

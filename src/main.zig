@@ -5,6 +5,8 @@ const sdl = @import("bindings.zig").sdl;
 const vkb = @import("vulkan/backend.zig");
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
+
     if (!sdl.SDL_Init(sdl.SDL_INIT_VIDEO)) {
         std.debug.print("SDL init failed: {s}\n", .{sdl.SDL_GetError()});
         return;
@@ -32,6 +34,13 @@ pub fn main() !void {
     // ----- Vulkan surface creation --------------------------------------------------
     const surface = try vkb.surface.create(instance, window);
     defer vkb.surface.destroy(instance, surface);
+
+    // ----- Physical device selection ------------------------------------------------
+    const physical_device = try vkb.physical_device.pick(allocator, instance, surface);
+
+    // ----- Logical device creation --------------------------------------------------
+    const device = try vkb.device.create(physical_device.device, physical_device.indices);
+    defer vkb.device.destroy(device.handle);
 
     var running = true;
     while (running) {
