@@ -47,7 +47,8 @@ pub fn build(b: *std.Build) void {
     const clean_step = b.step("clean", "Remove zig-out and .zig-cache");
     const clean_cmd = switch (b.graph.host.result.os.tag) {
         .windows => b.addSystemCommand(&.{
-            "cmd",                                                                                            "/c",
+            "cmd",
+            "/c",
             // 2>nul suppresses the access denied error
             // || exit 0 prevents a non-zero exit code from failing the step
             "rd /s /q zig-out 2>nul & rd /s /q .zig-cache\\o 2>nul & rd /s /q .zig-cache\\h 2>nul || exit 0",
