@@ -2,11 +2,12 @@ const std = @import("std");
 const vk = @import("../bindings.zig").vk;
 const sdl = @import("../bindings.zig").sdl;
 
-const Swapchain = struct {
+pub const Swapchain = struct {
     handle: vk.VkSwapchainKHR,
     images: []vk.VkImage,
     views: []vk.VkImageView,
     format: vk.VkFormat,
+    extent: vk.VkExtent2D,
 };
 
 pub fn create(
@@ -72,6 +73,7 @@ pub fn create(
         .images = images,
         .views = views,
         .format = surface_format.format,
+        .extent = swap_extent,
     };
 }
 
