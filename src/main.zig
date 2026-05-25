@@ -42,6 +42,15 @@ pub fn main() !void {
     const device = try vkb.device.create(physical_device.device, physical_device.indices);
     defer vkb.device.destroy(device.handle);
 
+    // ----- Swapchain creation -------------------------------------------------------
+    const swapchain = try vkb.swapchain.create(
+        physical_device.device,
+        device.handle,
+        surface,
+        window,
+    );
+    defer vkb.swapchain.destroy(device.handle, swapchain);
+
     var running = true;
     while (running) {
         var event: sdl.SDL_Event = undefined;
