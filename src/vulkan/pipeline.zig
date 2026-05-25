@@ -145,3 +145,32 @@ pub const PipelineBuilder = struct {
         return pipeline;
     }
 };
+
+pub fn create_layout(device: vk.VkDevice) !vk.VkPipelineLayout {
+    const create_info = vk.VkPipelineLayoutCreateInfo{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .pNext = null,
+        .flags = 0,
+        .setLayoutCount = 0,
+        .pSetLayouts = null,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = null,
+    };
+
+    var layout: vk.VkPipelineLayout = undefined;
+    const result = vk.vkCreatePipelineLayout(device, &create_info, null, &layout);
+    if (result != vk.VK_SUCCESS) {
+        std.debug.print("vkCreatePipelineLayout failed: {d}\n", .{result});
+        return error.VulkanPipelineLayoutFailed;
+    }
+
+    return layout;
+}
+
+pub fn destroy(device: vk.VkDevice, pipeline: vk.VkPipeline) void {
+    vk.vkDestroyPipeline(device, pipeline, null);
+}
+
+pub fn destroy_layout(device: vk.VkDevice, layout: vk.VkPipelineLayout) void {
+    vk.vkDestroyPipelineLayout(device, layout, null);
+}
