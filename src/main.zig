@@ -51,6 +51,10 @@ pub fn main() !void {
     );
     defer vkb.swapchain.destroy(device.handle, swapchain);
 
+    // ----- Render pass creation ------------------------------------------------------
+    const render_pass = try vkb.renderpass.create(device.handle, swapchain.image_format);
+    defer vkb.renderpass.destroy(device.handle, render_pass);
+
     var running = true;
     while (running) {
         var event: sdl.SDL_Event = undefined;
