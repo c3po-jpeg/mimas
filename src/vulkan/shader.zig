@@ -2,14 +2,19 @@ const std = @import("std");
 const vk = @import("../bindings.zig").vk;
 
 pub fn load(
+    io: std.Io,
     device: vk.VkDevice,
     allocator: std.mem.Allocator,
     path: []const u8,
 ) !vk.VkShaderModule {
-    const file = try std.fs.cwd().openFile(path, .{});
-    defer file.close();
+    var file = try std.Io.Dir.cwd().openFile(io, path, .{});
+    defer file.close(io);
 
-    const spv = try file.readT(allocator, std.math.maxInt(usize));
+    var reader = file.reader(io, &.{});
+    const spv = try reader.interface.allocRemaining(
+        allocator,
+        .unlimited,
+    );
     defer allocator.free(spv);
 
     const code: [*]const u32 = @ptrCast(@alignCast(spv.ptr));
@@ -18,14 +23,20 @@ pub fn load(
         .sType = vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .pNext = null,
         .flags = 0,
-        .codeSize = @intCast(spv.len),
+        .codeSize = spv.len,
         .pCode = code,
     };
 
     var module: vk.VkShaderModule = undefined;
-    const result = vk.vkCreateShaderModule(device, &create_info, null, &module);
+
+    const result = vk.vkCreateShaderModule(
+        device,
+        &create_info,
+        null,
+        &module,
+    );
+
     if (result != vk.VK_SUCCESS) {
-        std.debug.print("vkCreateShaderModule failed: {d}\n", .{result});
         return error.VulkanShaderModuleFailed;
     }
 
