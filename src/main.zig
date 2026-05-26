@@ -55,6 +55,18 @@ pub fn main() !void {
     const render_pass = try vkb.renderpass.create(device.handle, swapchain.format);
     defer vkb.renderpass.destroy(device.handle, render_pass);
 
+    // ----- Pipeline creation ---------------------------------------------------------
+    const pipeline_layout = try vkb.pipeline.create_layout(device.handle);
+    defer vkb.pipeline.destroy_layout(device.handle, pipeline_layout);
+
+    const render_pipeline = try vkb.pipeline.render_pipeline(
+        device.handle,
+        render_pass,
+        pipeline_layout,
+        swapchain.extent,
+    );
+    defer vkb.pipeline.destroy(device.handle, render_pipeline);
+
     var running = true;
     while (running) {
         var event: sdl.SDL_Event = undefined;

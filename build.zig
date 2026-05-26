@@ -67,12 +67,12 @@ pub fn build(b: *std.Build) void {
     }{
         .{
             .src = "src/shaders/vert.glsl",
-            .out = "zig-out/vert.spv",
+            .out = "src/shaders/vert.spv",
             .stage = "vert",
         },
         .{
             .src = "src/shaders/frag.glsl",
-            .out = "zig-out/frag.spv",
+            .out = "src/shaders/frag.spv",
             .stage = "frag",
         },
     };

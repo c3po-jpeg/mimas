@@ -23,8 +23,8 @@ pub const PipelineBuilder = struct {
             .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .pNext = null,
             .flags = 0,
-            .vertexBindingDescriptionCount = if (self.vertex_binding) 1 else 0,
-            .pVertexBindingDescriptions = if (self.vertex_binding) &self.vertex_binding.? else null,
+            .vertexBindingDescriptionCount = if (self.vertex_binding != null) 1 else 0,
+            .pVertexBindingDescriptions = if (self.vertex_binding != null) &self.vertex_binding.? else null,
             .vertexAttributeDescriptionCount = @intCast(self.vertex_attributes.len),
             .pVertexAttributeDescriptions = self.vertex_attributes.ptr,
         };
@@ -134,7 +134,7 @@ pub const PipelineBuilder = struct {
         };
 
         var pipeline: vk.VkPipeline = undefined;
-        const result = vk.vkCreateGraphicsPipelines(device, vk.VK_NULL_HANDLE, 1, &pipeline_info, null, &pipeline);
+        const result = vk.vkCreateGraphicsPipelines(device, null, 1, &pipeline_info, null, &pipeline);
         if (result != vk.VK_SUCCESS) {
             std.debug.print("vkCreateGraphicsPipelines failed: {d}\n", .{
                 result,
@@ -181,31 +181,30 @@ pub fn render_pipeline(
     layout: vk.VkPipelineLayout,
     extent: vk.VkExtent2D,
 ) !vk.VkPipeline {
+    const vert_spv = @embedFile("../shaders/vert.spv");
+    const frag_spv = @embedFile("../shaders/frag.spv");
+
     const vert_shader = try shader.load(
-        std.Io,
         device,
-        std.heap.page_allocator,
-        "../zig-out/shaders/vert.spv",
+        vert_spv,
     );
     defer shader.destroy(device, vert_shader);
 
     const frag_shader = try shader.load(
-        std.Io,
         device,
-        std.heap.page_allocator,
-        "../zig-out/shaders/frag.spv",
+        frag_spv,
     );
     defer shader.destroy(device, frag_shader);
 
     const stages = shader_stages(vert_shader, frag_shader);
 
     const builder = PipelineBuilder{
-        .shader_stages = stages,
+        .shader_stages = &stages,
         .depth_test = true,
         .depth_write = true,
         .cull_mode = vk.VK_CULL_MODE_BACK_BIT,
         .vertex_binding = Vertex3D.get_binding_description(),
-        .vertex_attributes = Vertex3D.get_attribute_descriptions(),
+        .vertex_attributes = &Vertex3D.get_attribute_descriptions(),
     };
 
     return builder.build(device, render_pass, layout, extent);
