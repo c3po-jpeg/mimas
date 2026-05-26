@@ -45,7 +45,7 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     const clean_step = b.step("clean", "Remove zig-out and .zig-cache");
-    const clean_cmd = switch (b.graph.host.result.os.tag) {
+    const clean_cmd = switch (os) {
         .windows => b.addSystemCommand(&.{
             "cmd",
             "/c",
@@ -58,6 +58,45 @@ pub fn build(b: *std.Build) void {
         }),
     };
     clean_step.dependOn(&clean_cmd.step);
+
+    // SHADER COMPILATION STEP  — compiles GLSL shaders to SPIR-V using glslc
+    const shaders = [_]struct {
+        src: []const u8,
+        out: []const u8,
+        stage: []const u8,
+    }{
+        .{
+            .src = "src/shaders/vert.glsl",
+            .out = "zig-out/vert.spv",
+            .stage = "vert",
+        },
+        .{
+            .src = "src/shaders/frag.glsl",
+            .out = "zig-out/frag.spv",
+            .stage = "frag",
+        },
+    };
+
+    const shader_step = b.step("shaders", "Compile shaders");
+    for (shaders) |shader| {
+        const stage_flag = b.fmt("-fshader-stage={s}", .{shader.stage});
+
+        const cmd = switch (os) {
+            .windows => b.addSystemCommand(&.{
+                "external/vulkan-1.4.350.0/bin/glslc.exe",
+            }),
+            else => b.addSystemCommand(&.{"glslc"}),
+        };
+
+        cmd.addArg(stage_flag); // runtime string added separately
+        cmd.addArg(shader.src);
+        cmd.addArg("-o");
+        cmd.addArg(shader.out);
+
+        shader_step.dependOn(&cmd.step);
+    } // <-- no semicolon here
+
+    exe.step.dependOn(shader_step);
 
     // TEST STEP  — `zig build test`
     const exe_test = b.addTest(.{
