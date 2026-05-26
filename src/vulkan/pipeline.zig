@@ -174,3 +174,65 @@ pub fn destroy(device: vk.VkDevice, pipeline: vk.VkPipeline) void {
 pub fn destroy_layout(device: vk.VkDevice, layout: vk.VkPipelineLayout) void {
     vk.vkDestroyPipelineLayout(device, layout, null);
 }
+
+pub fn render_pipeline(
+    device: vk.VkDevice,
+    render_pass: vk.VkRenderPass,
+    layout: vk.VkPipelineLayout,
+    extent: vk.VkExtent2D,
+) !vk.VkPipeline {
+    const vert_shader = try shader.load(
+        std.Io,
+        device,
+        std.heap.page_allocator,
+        "shaders/vert.spv",
+    );
+    defer shader.destroy(device, vert_shader);
+
+    const frag_shader = try shader.load(
+        std.Io,
+        device,
+        std.heap.page_allocator,
+        "shaders/frag.spv",
+    );
+    defer shader.destroy(device, frag_shader);
+
+    const stages = shader_stages(vert_shader, frag_shader);
+
+    const builder = PipelineBuilder{
+        .shader_stages = stages,
+        .depth_test = true,
+        .depth_write = true,
+        .cull_mode = vk.VK_CULL_MODE_BACK_BIT,
+        .vertex_binding = Vertex3D.get_binding_description(),
+        .vertex_attributes = Vertex3D.get_attribute_descriptions(),
+    };
+
+    return builder.build(device, render_pass, layout, extent);
+}
+
+fn shader_stages(vert: vk.VkShaderModule, frag: vk.VkShaderModule) [2]vk.VkPipelineShaderStageCreateInfo {
+    return .{
+        .{
+            .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = null,
+            .flags = 0,
+            .stage = vk.VK_SHADER_STAGE_VERTEX_BIT,
+            .module = vert,
+            .pName = "main",
+            .pSpecializationInfo = null,
+        },
+        .{
+            .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = null,
+            .flags = 0,
+            .stage = vk.VK_SHADER_STAGE_FRAGMENT_BIT,
+            .module = frag,
+            .pName = "main",
+            .pSpecializationInfo = null,
+        },
+    };
+}
+
+const shader = @import("shader.zig");
+const Vertex3D = @import("vertex.zig").Vertex3D;
