@@ -63,3 +63,7 @@ pub fn create(device: vk.VkDevice, swapchain_format: vk.VkFormat) !vk.VkRenderPa
 
     return render_pass;
 }
+
+pub fn destroy(device: vk.VkDevice, render_pass: vk.VkRenderPass) void {
+    vk.vkDestroyRenderPass(device, render_pass, null);
+}
