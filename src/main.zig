@@ -52,7 +52,7 @@ pub fn main() !void {
     defer vkb.swapchain.destroy(device.handle, swapchain);
 
     // ----- Render pass creation ------------------------------------------------------
-    const render_pass = try vkb.renderpass.create(device.handle, swapchain.image_format);
+    const render_pass = try vkb.renderpass.create(device.handle, swapchain.format);
     defer vkb.renderpass.destroy(device.handle, render_pass);
 
     var running = true;
