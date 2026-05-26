@@ -185,7 +185,7 @@ pub fn render_pipeline(
         std.Io,
         device,
         std.heap.page_allocator,
-        "shaders/vert.spv",
+        "../zig-out/shaders/vert.spv",
     );
     defer shader.destroy(device, vert_shader);
 
@@ -193,7 +193,7 @@ pub fn render_pipeline(
         std.Io,
         device,
         std.heap.page_allocator,
-        "shaders/frag.spv",
+        "../zig-out/shaders/frag.spv",
     );
     defer shader.destroy(device, frag_shader);
 
