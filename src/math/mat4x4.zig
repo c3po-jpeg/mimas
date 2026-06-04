@@ -180,6 +180,12 @@ pub const Mat4x4 = struct {
         } };
     }
 
+    //pub fn determinant(self: Mat4x4) f32 {}
+
+    //pub fn cofactor(self: Mat4x4, row: usize, col: usize) f32 {}
+
+    //pub fn inverse(self: Mat4x4) Mat4x4 {}
+
     pub fn translation(x: f32, y: f32, z: f32) Mat4x4 {
         return .{ .d = .{
             .{ 1.0, 0.0, 0.0, x },
