@@ -225,7 +225,56 @@ pub const Mat4x4 = struct {
         return result;
     }
 
-    pub fn look_at(eye: Vec3, center: Vec3, up: Vec3) Mat4x4 {}
+    pub fn look_at(position: Vec3, target: Vec3, up: Vec3) Mat4x4 {
+        const f = target.sub(position).normalize().scale(-1.0);
+        const r = up.cross(f).normalize();
+        const u = f.cross(r).normalize();
+
+        const t = .{
+            .x = -r.dot(position),
+            .y = -u.dot(position),
+            .z = -f.dot(position),
+        };
+
+        return .{ .d = .{
+            .{ r.x, r.y, r.z, t.x },
+            .{ u.x, u.y, u.z, t.y },
+            .{ f.x, f.y, f.z, t.z },
+            .{ 0.0, 0.0, 0.0, 1.0 },
+        } };
+    }
+
+    pub fn frustrum(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) Mat4x4 {
+        const rl = right - left;
+        const tb = top - bottom;
+        const fn_ = far - near;
+
+        return .{ .d = .{
+            .{ (2.0 * near) / rl, 0.0, (right + left) / rl, 0.0 },
+            .{ 0.0, (2.0 * near) / tb, (top + bottom) / tb, 0.0 },
+            .{ 0.0, 0.0, -(far + near) / fn_, -(2.0 * far * near) / fn_ },
+            .{ 0.0, 0.0, -1.0, 0.0 },
+        } };
+    }
+
+    pub fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) Mat4x4 {
+        const rl = right - left;
+        const tb = top - bottom;
+        const fn_ = far - near;
+
+        return .{ .d = .{
+            .{ 2.0 / rl, 0.0, 0.0, -(right + left) / rl },
+            .{ 0.0, 2.0 / tb, 0.0, -(top + bottom) / tb },
+            .{ 0.0, 0.0, -2.0 / fn_, -(far + near) / fn_ },
+            .{ 0.0, 0.0, 0.0, 1.0 },
+        } };
+    }
+
+    pub fn perspective(fov_rad: f32, aspect: f32, near: f32, far: f32) Mat4x4 {
+        const ymax = near * @tan(fov_rad / 2.0);
+        const xmax = ymax * aspect;
+        return Mat4x4.frustrum(-xmax, xmax, -ymax, ymax, near, far);
+    }
 };
 
 const Vec3 = @import("vec3.zig").Vec3;
