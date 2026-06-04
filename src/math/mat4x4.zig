@@ -199,30 +199,30 @@ pub const Mat4x4 = struct {
     }
 
     pub fn rotation_x(angle_rad: f32) Mat4x4 {
-        return .{ .d = .{
-            .{ 1.0, 0.0, 0.0, 0.0 },
-            .{ 0.0, @cos(angle_rad), @sin(angle_rad), 0.0 },
-            .{ 0.0, -@sin(angle_rad), @cos(angle_rad), 0.0 },
-            .{ 0.0, 0.0, 0.0, 1.0 },
-        } };
+        var result = Mat4x4.identity();
+        result.d[1][1] = @cos(angle_rad);
+        result.d[1][2] = @sin(angle_rad);
+        result.d[2][1] = -@sin(angle_rad);
+        result.d[2][2] = @cos(angle_rad);
+        return result;
     }
 
     pub fn rotation_y(angle_rad: f32) Mat4x4 {
-        return .{ .d = .{
-            .{ @cos(angle_rad), 0.0, -@sin(angle_rad), 0.0 },
-            .{ 0.0, 1.0, 0.0, 0.0 },
-            .{ @sin(angle_rad), 0.0, @cos(angle_rad), 0.0 },
-            .{ 0.0, 0.0, 0.0, 1.0 },
-        } };
+        var result = Mat4x4.identity();
+        result.d[0][0] = @cos(angle_rad);
+        result.d[0][2] = -@sin(angle_rad);
+        result.d[2][0] = @sin(angle_rad);
+        result.d[2][2] = @cos(angle_rad);
+        return result;
     }
 
     pub fn rotation_z(angle_rad: f32) Mat4x4 {
-        return .{ .d = .{
-            .{ @cos(angle_rad), @sin(angle_rad), 0.0, 0.0 },
-            .{ -@sin(angle_rad), @cos(angle_rad), 0.0, 0.0 },
-            .{ 0.0, 0.0, 1.0, 0.0 },
-            .{ 0.0, 0.0, 0.0, 1.0 },
-        } };
+        var result = Mat4x4.identity();
+        result.d[0][0] = @cos(angle_rad);
+        result.d[0][1] = @sin(angle_rad);
+        result.d[1][0] = -@sin(angle_rad);
+        result.d[1][1] = @cos(angle_rad);
+        return result;
     }
 
     pub fn look_at(eye: Vec3, center: Vec3, up: Vec3) Mat4x4 {}
